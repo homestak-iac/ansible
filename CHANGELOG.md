@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.51 - 2026-02-28
+
 ### Changed
 - Rename `nested-pve` role to `child-pve` (#49)
   - Role directory: `roles/nested-pve/` → `roles/child-pve/`
