@@ -6,8 +6,8 @@
 - name: Verify running on Debian Trixie
   ansible.builtin.assert:
     that:
-      - ansible_distribution == "Debian"
-      - ansible_distribution_major_version == "13" or ansible_distribution_release == "trixie"
+      - ansible_facts['distribution'] == "Debian"
+      - ansible_facts['distribution_major_version'] == "13" or ansible_facts['distribution_release'] == "trixie"
     fail_msg: "This playbook requires Debian 13 (Trixie)"
 
 - name: Set hostname

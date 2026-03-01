@@ -52,11 +52,11 @@
     dest: /etc/apt/sources.list.d/pve-no-subscription.list
     content: |
       # Proxmox VE no-subscription repository
-      deb http://download.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-no-subscription
+      deb http://download.proxmox.com/debian/pve {{ ansible_facts['distribution_release'] }} pve-no-subscription
     mode: "0644"
 
 - name: Fix cloud-init mirror sources (Debian 13)
-  when: ansible_distribution_release == 'trixie'
+  when: ansible_facts['distribution_release'] == 'trixie'
   block:
     - name: Check for cloud-init mirror-style sources
       ansible.builtin.stat:
