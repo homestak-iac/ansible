@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.52 - 2026-03-02
+
 ### Breaking
 
 - **Remove dead `child-pve` role** and 4 associated playbooks (bootstrap#75)
