@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v0.53 - 2026-03-06
+
+### Fixed
+- Add `become: true` to all playbooks for user-owned execution model (#58)
+- Use `ansible_facts[]` syntax for fact references (#57)
+
+## v0.52 - 2026-03-02
+
 ### Breaking
 
 - **Remove dead `child-pve` role** and 4 associated playbooks (bootstrap#75)
