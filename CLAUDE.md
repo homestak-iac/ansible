@@ -102,7 +102,7 @@ See [homestak-dev/bootstrap](https://github.com/homestak-dev/bootstrap) for the 
 
 ```bash
 # One-command setup
-curl -fsSL https://raw.githubusercontent.com/homestak-dev/bootstrap/master/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/homestak-dev/bootstrap/master/install | sudo bash
 
 # Switch to homestak user, then use the 'homestak' command
 sudo -iu homestak
