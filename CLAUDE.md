@@ -98,11 +98,11 @@ roles:
 
 ## Installation
 
-See [homestak-dev/bootstrap](https://github.com/homestak-dev/bootstrap) for the recommended installation method:
+See [homestak/bootstrap](https://github.com/homestak/bootstrap) for the recommended installation method:
 
 ```bash
 # One-command setup
-curl -fsSL https://raw.githubusercontent.com/homestak-dev/bootstrap/master/install | sudo bash
+curl -fsSL https://raw.githubusercontent.com/homestak/bootstrap/master/install | sudo bash
 
 # Switch to homestak user, then use the 'homestak' command
 sudo -iu homestak
@@ -112,7 +112,7 @@ homestak user -e local_user=myuser
 
 ### Manual (without bootstrap)
 ```bash
-git clone https://github.com/homestak-dev/ansible.git ~/lib/ansible
+git clone https://github.com/homestak-iac/ansible.git ~/lib/ansible
 cd ~/lib/ansible
 apt install -y ansible git
 ansible-playbook -i inventory/local.yml playbooks/pve-setup.yml -c local
@@ -240,16 +240,16 @@ This pattern was discovered during v0.28.
 
 ## Related Projects
 
-Part of the [homestak-dev](https://github.com/homestak-dev) organization:
+Part of the [homestak-iac](https://github.com/homestak-iac) organization:
 
 | Repo | Purpose |
 |------|---------|
-| [bootstrap](https://github.com/homestak-dev/bootstrap) | Entry point - curl\|bash setup |
-| [site-config](https://github.com/homestak-dev/site-config) | Site-specific secrets and configuration |
-| [ansible](https://github.com/homestak-dev/ansible) | This project - Proxmox configuration |
-| [iac-driver](https://github.com/homestak-dev/iac-driver) | Orchestration engine |
-| [packer](https://github.com/homestak-dev/packer) | Custom Debian cloud images |
-| [tofu](https://github.com/homestak-dev/tofu) | VM provisioning with OpenTofu |
+| [bootstrap](https://github.com/homestak/bootstrap) | Entry point - curl\|bash setup |
+| [config](https://github.com/homestak/config) | Site-specific secrets and configuration |
+| [ansible](https://github.com/homestak-iac/ansible) | This project - Proxmox configuration |
+| [iac-driver](https://github.com/homestak-iac/iac-driver) | Orchestration engine |
+| [packer](https://github.com/homestak-iac/packer) | Custom Debian cloud images |
+| [tofu](https://github.com/homestak-iac/tofu) | VM provisioning with OpenTofu |
 
 ## Playbook Details
 
@@ -309,7 +309,7 @@ Evaluated but **not suitable** for homestak:
 
 ## GitHub Repository
 
-- https://github.com/homestak-dev/ansible
+- https://github.com/homestak-iac/ansible
 
 ## License
 
