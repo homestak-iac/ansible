@@ -1,9 +1,9 @@
 ---
 # Fallback defaults for standalone ansible execution.
-# When run via iac-driver, these are overridden by site-config resolved vars.
+# When run via iac-driver, these are overridden by config resolved vars.
 
 # System
-timezone: UTC  # Safe fallback; site-config has real timezone
+timezone: UTC  # Safe fallback; config has real timezone
 
 # Packages (minimal set for standalone)
 packages:

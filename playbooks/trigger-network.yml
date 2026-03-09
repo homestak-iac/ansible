@@ -40,7 +40,7 @@
 
     - name: Download bootstrap script
       ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/homestak-dev/ansible/master/homestak-bootstrap.sh
+        url: https://raw.githubusercontent.com/homestak-iac/ansible/master/homestak-bootstrap.sh
         dest: /tmp/homestak-bootstrap.sh
         mode: '0755'
       when: not bootstrap_check.stat.exists
