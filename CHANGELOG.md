@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed
+- Update stale paths for multi-org migration (#62)
+  - `site-config` → `config`, `~/lib/` → `~/iac/` in docs and config
+  - `homestak-dev` → `homestak-iac` in galaxy.yml and GitHub URLs
+  - Config-apply state path: `~/config/.state/config-vars.json`
+
 ## v0.53 - 2026-03-06
 
 ### Fixed
