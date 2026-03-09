@@ -2,7 +2,7 @@
 
 Ansible playbooks for Proxmox VE configuration and PVE installation.
 
-Part of the [homestak-dev](https://github.com/homestak-dev) organization. See [bootstrap](https://github.com/homestak-dev/bootstrap) for installation.
+Part of the [homestak-iac](https://github.com/homestak-iac) organization. See [bootstrap](https://github.com/homestak/bootstrap) for installation.
 
 ## Playbooks
 
@@ -105,11 +105,11 @@ See [CLAUDE.md](CLAUDE.md) for detailed playbook information and integration tes
 
 | Repo | Purpose |
 |------|---------|
-| [bootstrap](https://github.com/homestak-dev/bootstrap) | Entry point - curl\|bash setup |
-| [site-config](https://github.com/homestak-dev/site-config) | Site-specific secrets and configuration |
-| [iac-driver](https://github.com/homestak-dev/iac-driver) | Orchestration engine |
-| [packer](https://github.com/homestak-dev/packer) | Custom Debian cloud images |
-| [tofu](https://github.com/homestak-dev/tofu) | VM provisioning with OpenTofu |
+| [bootstrap](https://github.com/homestak/bootstrap) | Entry point - curl\|bash setup |
+| [config](https://github.com/homestak/config) | Site-specific secrets and configuration |
+| [iac-driver](https://github.com/homestak-iac/iac-driver) | Orchestration engine |
+| [packer](https://github.com/homestak-iac/packer) | Custom Debian cloud images |
+| [tofu](https://github.com/homestak-iac/tofu) | VM provisioning with OpenTofu |
 
 ## License
 

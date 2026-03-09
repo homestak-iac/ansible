@@ -4,7 +4,7 @@ name: proxmox
 version: 1.0.0
 readme: README.md
 authors:
-  - homestak-dev <https://github.com/homestak-dev>
+  - homestak-iac <https://github.com/homestak-iac>
 description: Proxmox VE installation and configuration roles
 license_file: LICENSE
 tags:
@@ -13,10 +13,10 @@ tags:
   - proxmox
   - pve
   - virtualization
-repository: https://github.com/homestak-dev/ansible
-documentation: https://github.com/homestak-dev/ansible
-homepage: https://github.com/homestak-dev
-issues: https://github.com/homestak-dev/ansible/issues
+repository: https://github.com/homestak-iac/ansible
+documentation: https://github.com/homestak-iac/ansible
+homepage: https://github.com/homestak-iac
+issues: https://github.com/homestak-iac/ansible/issues
 dependencies:
   homestak.debian: ">=1.0.0"
 build_ignore:

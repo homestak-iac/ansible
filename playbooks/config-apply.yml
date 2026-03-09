@@ -2,7 +2,7 @@
 # Config phase playbook: apply a specification to the local host.
 #
 # Called by: iac-driver ./run.sh config
-# Variables: passed via -e @~/etc/state/config-vars.json
+# Variables: passed via -e @~/config/.state/config-vars.json
 #
 # Roles applied:
 #   - homestak.debian.base     (packages, timezone)

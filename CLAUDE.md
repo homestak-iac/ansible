@@ -112,8 +112,8 @@ homestak user -e local_user=myuser
 
 ### Manual (without bootstrap)
 ```bash
-git clone https://github.com/homestak-iac/ansible.git ~/lib/ansible
-cd ~/lib/ansible
+git clone https://github.com/homestak-iac/ansible.git ~/iac/ansible
+cd ~/iac/ansible
 apt install -y ansible git
 ansible-playbook -i inventory/local.yml playbooks/pve-setup.yml -c local
 ```
@@ -153,21 +153,21 @@ ansible-playbook -i inventory/local.yml playbooks/pve-network.yml \
 
 ## Configuration Source (v0.13+)
 
-When run via iac-driver, configuration comes from site-config:
-- `site-config/site.yaml` - Site defaults (timezone, packages, pve settings)
-- `site-config/postures/{name}.yaml` - Security posture (SSH, sudo, fail2ban)
-- `site-config/secrets.yaml` - SSH keys for authorized_keys
+When run via iac-driver, configuration comes from config:
+- `config/site.yaml` - Site defaults (timezone, packages, pve settings)
+- `config/postures/{name}.yaml` - Security posture (SSH, sudo, fail2ban)
+- `config/secrets.yaml` - SSH keys for authorized_keys
 
 When run standalone, `group_vars/all.yml` provides safe fallback defaults.
 
-**Variable precedence:** site-config resolved vars > extra_vars > group_vars/all.yml
+**Variable precedence:** config resolved vars > extra_vars > group_vars/all.yml
 
 ## Key Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `timezone` | UTC | System timezone (site-config: America/Denver) |
-| `packages` | minimal | Packages to install (site-config: full list) |
+| `timezone` | UTC | System timezone (config: America/Denver) |
+| `packages` | minimal | Packages to install (config: full list) |
 | `ssh_permit_root_login` | prohibit-password | Root SSH policy (posture-dependent) |
 | `sudo_nopasswd` | false | Passwordless sudo (true for dev posture) |
 | `fail2ban_enabled` | false | Enable fail2ban (true for prod posture) |
