@@ -1,1 +1,4 @@
 roles/lae.proxmox/
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "__ Lint __",
+      "Bash(ansible-lint *)",
+      "Bash(yamllint *)",
+
+      "__ Build __",
+      "Bash(make *)",
+
+      "__ Claude Code tools __",
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "deny": [
+      "Bash(ansible-playbook *)"
+    ]
+  }
+}

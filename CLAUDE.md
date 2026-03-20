@@ -2,6 +2,27 @@
 
 Ansible playbooks for configuring fresh Proxmox VE installations and installing PVE on Debian.
 
+## Ecosystem Context
+
+This repo is part of the homestak polyrepo workspace. For project architecture,
+development lifecycle, sprint/release process, and cross-repo conventions, see:
+
+- `~/homestak/dev/meta/CLAUDE.md` — primary reference
+- `docs/lifecycle/` in meta — 7-phase development process
+- `docs/CLAUDE-GUIDELINES.md` in meta — documentation standards
+
+When working in a scoped session (this repo only), follow the same sprint/release
+process defined in meta. Use `/session save` before context compaction and
+`/session resume` to restore state in new sessions.
+
+### Agent Boundaries
+
+This agent operates within the following constraints:
+
+- Opens PRs via `homestak-bot`; never merges without human approval
+- Runs lint and validation tools only; never executes infrastructure operations
+- Never runs `ansible-playbook` or modifies live host configuration
+
 ## Quick Reference
 
 ```bash
