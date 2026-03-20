@@ -14,6 +14,9 @@ pve_network_tasks: []
 # pve_bridge_netmask: ""    # Netmask (default: from physical interface)
 # pve_bridge_gateway: ""    # Gateway (default: from default route)
 
+# DNS servers for bridge interface (empty = no DNS config)
+pve_dns_servers: []
+
 # Re-IP variables
 pve_new_ip: ""
 pve_new_netmask: 24

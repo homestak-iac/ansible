@@ -15,6 +15,15 @@
     msg: "vmbr0 bridge already exists - skipping bridge creation"
   when: vmbr0_check.rc == 0
 
+- name: Ensure DNS on existing vmbr0 for systemd-resolved
+  when:
+    - vmbr0_check.rc == 0
+    - pve_dns_servers | default([]) | length > 0
+  ansible.builtin.command:
+    cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
+  changed_when: true
+  failed_when: false
+
 - name: Create vmbr0 bridge
   when: vmbr0_check.rc != 0
   block:
@@ -135,9 +144,19 @@
           	bridge-ports {{ pve_bridge_port }}
           	bridge-stp off
           	bridge-fd 0
+          {% if pve_dns_servers | default([]) | length > 0 %}
+          	dns-nameservers {{ pve_dns_servers | join(' ') }}
+          {% endif %}
         state: present
 
     - name: Apply network configuration
       ansible.builtin.shell: |
         ifreload -a || systemctl restart networking
       changed_when: true
+
+    - name: Configure DNS on vmbr0 for systemd-resolved
+      when: pve_dns_servers | default([]) | length > 0
+      ansible.builtin.command:
+        cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
+      changed_when: true
+      failed_when: false
