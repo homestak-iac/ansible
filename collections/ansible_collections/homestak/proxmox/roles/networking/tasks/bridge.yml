@@ -19,10 +19,18 @@
   when:
     - vmbr0_check.rc == 0
     - pve_dns_servers | default([]) | length > 0
-  ansible.builtin.command:
-    cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
-  changed_when: true
-  failed_when: false
+  block:
+    - name: Set DNS servers on existing vmbr0
+      ansible.builtin.command:
+        cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
+      changed_when: true
+      failed_when: false
+
+    - name: Set DefaultRoute on existing vmbr0
+      ansible.builtin.command:
+        cmd: "resolvectl default-route {{ pve_network_interface }} yes"
+      changed_when: true
+      failed_when: false
 
 - name: Create vmbr0 bridge
   when: vmbr0_check.rc != 0
@@ -156,7 +164,15 @@
 
     - name: Configure DNS on vmbr0 for systemd-resolved
       when: pve_dns_servers | default([]) | length > 0
-      ansible.builtin.command:
-        cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
-      changed_when: true
-      failed_when: false
+      block:
+        - name: Set DNS servers on new vmbr0
+          ansible.builtin.command:
+            cmd: "resolvectl dns {{ pve_network_interface }} {{ pve_dns_servers | join(' ') }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Set DefaultRoute on new vmbr0
+          ansible.builtin.command:
+            cmd: "resolvectl default-route {{ pve_network_interface }} yes"
+          changed_when: true
+          failed_when: false
