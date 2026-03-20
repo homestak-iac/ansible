@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Features
+- Configure DNS servers on vmbr0 bridge creation via `pve_dns_servers` variable
+
+### Fixed
+- Set `DefaultRoute: yes` on vmbr0 for systemd-resolved DNS resolution on Debian 13
+
 ## v0.56 - 2026-03-09
 
 No changes.
