@@ -210,20 +210,38 @@
           {% endif %}
         state: present
 
-    # The installer's DHCP client is stopped in the same task that reloads the
-    # network. Stopping it takes the leased address off the port and the reload
-    # puts the address on the bridge, so a run over SSH keeps its connection.
-    # The client exits without releasing the lease.
+    # The installer's DHCP client (dhcpcd, one process group per interface) is
+    # stopped in the same task that reloads the network. Stopping it takes the
+    # leased address off the port and the reload puts the address on the bridge,
+    # so a run over SSH keeps its connection. SIGTERM is used because
+    # "dhcpcd -x <port>" is accepted by dhcpcd 10.1 but leaves it running.
     - name: Apply network configuration
       ansible.builtin.shell: |
         {% if bridge_static | bool %}
-        if command -v dhcpcd > /dev/null 2>&1; then
-          dhcpcd -4 -x {{ pve_bridge_port }} > /dev/null 2>&1 ||
-            dhcpcd -x {{ pve_bridge_port }} > /dev/null 2>&1 || true
-        fi
+        for pidfile in /run/dhcpcd/{{ pve_bridge_port }}.pid /run/dhcpcd/{{ pve_bridge_port }}-4.pid; do
+          [ -r "$pidfile" ] || continue
+          pid=$(cat "$pidfile")
+          kill -TERM "$pid" 2> /dev/null || continue
+          for i in $(seq 1 50); do
+            kill -0 "$pid" 2> /dev/null || break
+            sleep 0.2
+          done
+        done
         {% endif %}
         ifreload -a || systemctl restart networking
       changed_when: true
+
+    # A client that survives would rewrite /etc/resolv.conf later (#77).
+    - name: Check that no DHCP client is left on the bridge port
+      ansible.builtin.command:
+        cmd: "pgrep -af '^dhcpcd: (\\[[^]]*\\] )?{{ pve_bridge_port }}( |$)'"
+      register: bridge_dhcp_left
+      changed_when: false
+      failed_when: bridge_dhcp_left.rc == 0
+      until: bridge_dhcp_left.rc != 0
+      retries: 5
+      delay: 1
+      when: bridge_static | bool
 
     - name: Keep name servers now that the address is static
       when:
