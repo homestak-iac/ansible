@@ -3,6 +3,20 @@
 # Creates vmbr0 bridge from primary physical interface
 # For fresh PVE wiki installs where no bridge exists yet
 # Multi-NIC safe: auto-detects primary interface via default route
+#
+# Pending PVE changes: PVE stages network changes in /etc/network/interfaces.new
+# and pvenetcommit.service moves that file over /etc/network/interfaces at the
+# next boot. Installing PVE leaves such a file behind, written before the bridge
+# exists. Left alone, it replaces the bridge config on the first reboot (#76).
+# So a pending file is committed before the bridge is created, and a pending
+# file that lacks the bridge is removed when the bridge already exists.
+#
+# Name servers: a freshly installed host gets its address and its name servers
+# by DHCP. Creating the bridge turns the address into a static one, so the name
+# servers have to be made static too, and the DHCP client that the installer
+# left on the bridge port has to stop. Otherwise that client empties
+# /etc/resolv.conf and the host has no DNS after the next reboot (#77).
+# Name servers come from pve_dns_servers when set, else from the running host.
 
 - name: Check if vmbr0 already exists
   ansible.builtin.shell: ip link show vmbr0 2>/dev/null
@@ -10,10 +24,33 @@
   failed_when: false
   changed_when: false
 
+- name: Check for pending PVE network changes
+  ansible.builtin.stat:
+    path: /etc/network/interfaces.new
+  register: bridge_pending
+
 - name: Skip bridge creation if vmbr0 already exists
   ansible.builtin.debug:
     msg: "vmbr0 bridge already exists - skipping bridge creation"
   when: vmbr0_check.rc == 0
+
+- name: Protect existing vmbr0 from pending PVE network changes
+  when:
+    - vmbr0_check.rc == 0
+    - bridge_pending.stat.exists
+  block:
+    - name: Check whether pending changes define the bridge
+      ansible.builtin.command:
+        cmd: "grep -q '^iface {{ pve_network_interface }} ' /etc/network/interfaces.new"
+      register: bridge_pending_has_bridge
+      changed_when: false
+      failed_when: bridge_pending_has_bridge.rc > 1
+
+    - name: Remove pending changes that would drop the bridge at next boot
+      ansible.builtin.file:
+        path: /etc/network/interfaces.new
+        state: absent
+      when: bridge_pending_has_bridge.rc == 1
 
 - name: Ensure DNS on existing vmbr0 for systemd-resolved
   when:
@@ -68,12 +105,23 @@
         pve_bridge_netmask: "{{ pve_bridge_netmask | default(bridge_detected_netmask, true) }}"
         pve_bridge_gateway: "{{ pve_bridge_gateway | default(bridge_detected_gateway, true) }}"
 
+    # Link-local IPv6 servers are tied to the port by name ("%eno1"), so they
+    # stop working once the port joins the bridge.
+    - name: Detect name servers to keep on the bridge
+      ansible.builtin.set_fact:
+        bridge_static: "{{ pve_bridge_address | default('', true) | length > 0 }}"
+        bridge_dns_servers: "{{ (pve_dns_servers | default([], true)) or
+          ((ansible_facts['dns'] | default({})).get('nameservers', []) | reject('search', '%') | list) }}"
+        bridge_dns_search: "{{ (ansible_facts['dns'] | default({})).get('search', []) or
+          ([ansible_facts['dns']['domain']] if (ansible_facts['dns'] | default({})).get('domain') else []) }}"
+
     - name: Display bridge configuration
       ansible.builtin.debug:
         msg: |
           Bridge port: {{ pve_bridge_port }}
           Address: {{ pve_bridge_address }}/{{ pve_bridge_netmask }}
           Gateway: {{ pve_bridge_gateway }}
+          Name servers: {{ bridge_dns_servers | join(' ') | default('(none found)', true) }}
 
     - name: Validate bridge detection
       ansible.builtin.assert:
@@ -87,6 +135,11 @@
             pve_bridge_address: 198.51.100.61
             pve_bridge_netmask: 255.255.255.0
             pve_bridge_gateway: 198.51.100.1
+
+    - name: Commit pending PVE network changes before editing
+      ansible.builtin.command:
+        cmd: mv /etc/network/interfaces.new /etc/network/interfaces
+        removes: /etc/network/interfaces.new
 
     - name: Set physical interface to manual (bridge port)
       ansible.builtin.blockinfile:
@@ -157,10 +210,64 @@
           {% endif %}
         state: present
 
+    # The installer's DHCP client (dhcpcd, one process group per interface) is
+    # stopped in the same task that reloads the network. Stopping it takes the
+    # leased address off the port and the reload puts the address on the bridge,
+    # so a run over SSH keeps its connection. SIGTERM is used because
+    # "dhcpcd -x <port>" is accepted by dhcpcd 10.1 but leaves it running.
     - name: Apply network configuration
       ansible.builtin.shell: |
+        {% if bridge_static | bool %}
+        for pidfile in /run/dhcpcd/{{ pve_bridge_port }}.pid /run/dhcpcd/{{ pve_bridge_port }}-4.pid; do
+          [ -r "$pidfile" ] || continue
+          pid=$(cat "$pidfile")
+          kill -TERM "$pid" 2> /dev/null || continue
+          for i in $(seq 1 50); do
+            kill -0 "$pid" 2> /dev/null || break
+            sleep 0.2
+          done
+        done
+        {% endif %}
         ifreload -a || systemctl restart networking
       changed_when: true
+
+    # A client that survives would rewrite /etc/resolv.conf later (#77).
+    - name: Check that no DHCP client is left on the bridge port
+      ansible.builtin.command:
+        cmd: "pgrep -af '^dhcpcd: (\\[[^]]*\\] )?{{ pve_bridge_port }}( |$)'"
+      register: bridge_dhcp_left
+      changed_when: false
+      failed_when: bridge_dhcp_left.rc == 0
+      until: bridge_dhcp_left.rc != 0
+      retries: 5
+      delay: 1
+      when: bridge_static | bool
+
+    - name: Keep name servers now that the address is static
+      when:
+        - bridge_static | bool
+        - bridge_dns_servers | length > 0
+      block:
+        - name: Check how /etc/resolv.conf is managed
+          ansible.builtin.stat:
+            path: /etc/resolv.conf
+          register: bridge_resolv_conf
+
+        # A symlink means a resolver service owns the file; leave it alone.
+        - name: Write name servers to /etc/resolv.conf
+          ansible.builtin.copy:
+            dest: /etc/resolv.conf
+            content: |
+              {% if bridge_dns_search | length > 0 %}
+              search {{ bridge_dns_search | join(' ') }}
+              {% endif %}
+              {% for server in bridge_dns_servers %}
+              nameserver {{ server }}
+              {% endfor %}
+            owner: root
+            group: root
+            mode: "0644"
+          when: not (bridge_resolv_conf.stat.islnk | default(false))
 
     - name: Configure DNS on vmbr0 for systemd-resolved
       when: pve_dns_servers | default([]) | length > 0
