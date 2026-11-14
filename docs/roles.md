@@ -58,7 +58,7 @@ The `homestak.proxmox.networking` role dispatches tasks based on the `pve_networ
 
 | Task | Description |
 |------|-------------|
-| `bridge` | Create vmbr0 bridge from primary physical interface (auto-detects interface, address, gateway; idempotent - skips if vmbr0 exists; accounts for pending PVE changes in `/etc/network/interfaces.new` so the bridge survives the next reboot) |
+| `bridge` | Create vmbr0 bridge from primary physical interface (auto-detects interface, address, gateway; idempotent - skips if vmbr0 exists; accounts for pending PVE changes in `/etc/network/interfaces.new` so the bridge survives the next reboot; keeps the host's name servers, or `pve_dns_servers` when set, in `/etc/resolv.conf` and stops the installer's DHCP client on the bridge port) |
 | `reip` | Change static IP address |
 | `rename` | Change hostname and FQDN |
 | `dhcp` | Convert interface to DHCP |

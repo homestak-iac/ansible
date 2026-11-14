@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 - Fix vmbr0 bridge lost on first reboot after a fresh pve-setup: the bridge task now accounts for a pending `/etc/network/interfaces.new` (#76)
+- Fix host DNS lost on reboot after pve-setup creates vmbr0: the bridge task now writes the name servers to `/etc/resolv.conf` (from `pve_dns_servers`, else the running host) and stops the installer's DHCP client on the bridge port (#77)
 
 ## v0.58 - 2026-03-22
 
