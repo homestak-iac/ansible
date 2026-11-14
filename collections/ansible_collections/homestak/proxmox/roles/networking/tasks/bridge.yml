@@ -3,6 +3,13 @@
 # Creates vmbr0 bridge from primary physical interface
 # For fresh PVE wiki installs where no bridge exists yet
 # Multi-NIC safe: auto-detects primary interface via default route
+#
+# Pending PVE changes: PVE stages network changes in /etc/network/interfaces.new
+# and pvenetcommit.service moves that file over /etc/network/interfaces at the
+# next boot. Installing PVE leaves such a file behind, written before the bridge
+# exists. Left alone, it replaces the bridge config on the first reboot (#76).
+# So a pending file is committed before the bridge is created, and a pending
+# file that lacks the bridge is removed when the bridge already exists.
 
 - name: Check if vmbr0 already exists
   ansible.builtin.shell: ip link show vmbr0 2>/dev/null
@@ -10,10 +17,33 @@
   failed_when: false
   changed_when: false
 
+- name: Check for pending PVE network changes
+  ansible.builtin.stat:
+    path: /etc/network/interfaces.new
+  register: bridge_pending
+
 - name: Skip bridge creation if vmbr0 already exists
   ansible.builtin.debug:
     msg: "vmbr0 bridge already exists - skipping bridge creation"
   when: vmbr0_check.rc == 0
+
+- name: Protect existing vmbr0 from pending PVE network changes
+  when:
+    - vmbr0_check.rc == 0
+    - bridge_pending.stat.exists
+  block:
+    - name: Check whether pending changes define the bridge
+      ansible.builtin.command:
+        cmd: "grep -q '^iface {{ pve_network_interface }} ' /etc/network/interfaces.new"
+      register: bridge_pending_has_bridge
+      changed_when: false
+      failed_when: bridge_pending_has_bridge.rc > 1
+
+    - name: Remove pending changes that would drop the bridge at next boot
+      ansible.builtin.file:
+        path: /etc/network/interfaces.new
+        state: absent
+      when: bridge_pending_has_bridge.rc == 1
 
 - name: Ensure DNS on existing vmbr0 for systemd-resolved
   when:
@@ -87,6 +117,11 @@
             pve_bridge_address: 198.51.100.61
             pve_bridge_netmask: 255.255.255.0
             pve_bridge_gateway: 198.51.100.1
+
+    - name: Commit pending PVE network changes before editing
+      ansible.builtin.command:
+        cmd: mv /etc/network/interfaces.new /etc/network/interfaces
+        removes: /etc/network/interfaces.new
 
     - name: Set physical interface to manual (bridge port)
       ansible.builtin.blockinfile:

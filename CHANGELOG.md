@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Bug Fixes
+- Fix vmbr0 bridge lost on first reboot after a fresh pve-setup: the bridge task now accounts for a pending `/etc/network/interfaces.new` (#76)
+
 ## v0.58 - 2026-03-22
 
 No changes.
